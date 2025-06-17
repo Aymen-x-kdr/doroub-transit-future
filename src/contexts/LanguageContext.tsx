@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Language = 'en' | 'ar' | 'fr';
 
@@ -7,6 +7,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  isRTL: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -40,7 +41,9 @@ const translations = {
     language: "Language",
     profile: "Profile",
     notifications: "Notifications",
-    support: "Support"
+    support: "Support",
+    searchAvailableTickets: "Search Available Tickets",
+    showAvailableTickets: "Show Available Tickets"
   },
   ar: {
     welcome: "مرحباً بكم في دروب",
@@ -70,7 +73,9 @@ const translations = {
     language: "اللغة",
     profile: "الملف الشخصي",
     notifications: "الإشعارات",
-    support: "الدعم"
+    support: "الدعم",
+    searchAvailableTickets: "البحث عن التذاكر المتاحة",
+    showAvailableTickets: "عرض التذاكر المتاحة"
   },
   fr: {
     welcome: "Bienvenue sur Doroub",
@@ -100,22 +105,29 @@ const translations = {
     language: "Langue",
     profile: "Profil",
     notifications: "Notifications",
-    support: "Support"
+    support: "Support",
+    searchAvailableTickets: "Rechercher des billets disponibles",
+    showAvailableTickets: "Afficher les billets disponibles"
   }
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
+  const isRTL = language === 'ar';
 
   const t = (key: string) => {
     return translations[language][key as keyof typeof translations['en']] || key;
   };
 
+  useEffect(() => {
+    // Apply RTL direction to document
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language, isRTL]);
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      <div className={language === 'ar' ? 'rtl' : 'ltr'}>
-        {children}
-      </div>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
+      {children}
     </LanguageContext.Provider>
   );
 };
