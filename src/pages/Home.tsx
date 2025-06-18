@@ -7,66 +7,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import BottomNavigation from '@/components/BottomNavigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, MapPin, Search } from 'lucide-react';
+import { useTransitTypes, useRoutes } from '@/hooks/useTransitData';
+import { useBookings } from '@/hooks/useBookings';
+import { Clock, MapPin, Search, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { t, language, isRTL } = useLanguage();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchData, setSearchData] = useState({
     from: '',
     to: '',
-    selectedTransit: 'etusb'
+    selectedTransit: ''
   });
 
-  const transitOptions = [
-    { 
-      id: 'etusb', 
-      name: t('etusb'), 
-      icon: '🚌', 
-      color: 'from-blue-500 to-blue-600',
-      description: 'University Transport'
-    },
-    { 
-      id: 'bus', 
-      name: t('bus'), 
-      icon: '🚍', 
-      color: 'from-green-500 to-green-600',
-      description: 'City Buses'
-    },
-    { 
-      id: 'train', 
-      name: t('train'), 
-      icon: '🚆', 
-      color: 'from-purple-500 to-purple-600',
-      description: 'Railway Service'
-    },
-  ];
-
-  const mockTickets = [
-    {
-      id: 1,
-      from: 'University',
-      to: 'City Center',
-      time: '14:30',
-      price: '120 DA',
-      type: 'ETUSB',
-      status: 'active'
-    },
-    {
-      id: 2,
-      from: 'Batna Station',
-      to: 'Constantine',
-      time: '16:45',
-      price: '800 DA',
-      type: 'Train',
-      status: 'upcoming'
-    }
-  ];
+  const { data: transitTypes, isLoading: transitLoading } = useTransitTypes();
+  const { data: routes, isLoading: routesLoading } = useRoutes(
+    searchData.selectedTransit,
+    searchData.from,
+    searchData.to
+  );
+  const { data: bookings, isLoading: bookingsLoading } = useBookings();
 
   const handleShowAvailableTickets = () => {
-    console.log('Showing available tickets for:', searchData);
-    // Here you would typically make an API call to fetch available tickets
+    if (!searchData.selectedTransit) {
+      return;
+    }
+    
+    const params = new URLSearchParams();
+    if (searchData.from) params.set('from', searchData.from);
+    if (searchData.to) params.set('to', searchData.to);
+    if (searchData.selectedTransit) params.set('transit', searchData.selectedTransit);
+    
+    navigate(`/bookings?${params.toString()}`);
   };
+
+  if (transitLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-doroub-blue" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
@@ -98,7 +81,7 @@ const Home = () => {
                 value={searchData.from}
                 onChange={(e) => setSearchData({...searchData, from: e.target.value})}
                 className={`bg-white/20 border-white/30 text-white placeholder:text-white/60 rounded-xl mt-1 ${isRTL ? 'text-right' : ''}`}
-                placeholder="Origin"
+                placeholder={t('origin')}
               />
             </div>
             <div>
@@ -107,7 +90,7 @@ const Home = () => {
                 value={searchData.to}
                 onChange={(e) => setSearchData({...searchData, to: e.target.value})}
                 className={`bg-white/20 border-white/30 text-white placeholder:text-white/60 rounded-xl mt-1 ${isRTL ? 'text-right' : ''}`}
-                placeholder="Destination"
+                placeholder={t('destination')}
               />
             </div>
           </div>
@@ -116,9 +99,11 @@ const Home = () => {
 
       {/* Transit Options */}
       <div className="px-6 py-6">
-        <h3 className={`text-xl font-bold text-gray-800 mb-4 ${isRTL ? 'text-right' : ''}`}>Choose Transport</h3>
+        <h3 className={`text-xl font-bold text-gray-800 mb-4 ${isRTL ? 'text-right' : ''}`}>
+          {t('chooseTransport')}
+        </h3>
         <div className="grid grid-cols-1 gap-4">
-          {transitOptions.map((option) => (
+          {transitTypes?.map((option) => (
             <Card 
               key={option.id}
               className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
@@ -154,7 +139,8 @@ const Home = () => {
 
         <Button 
           onClick={handleShowAvailableTickets}
-          className={`w-full bg-doroub-gradient hover:opacity-90 text-white font-semibold py-3 rounded-2xl mt-6 transition-all duration-300 hover:scale-105 flex items-center justify-center ${isRTL ? 'flex-row-reverse' : ''}`}
+          disabled={!searchData.selectedTransit}
+          className={`w-full bg-doroub-gradient hover:opacity-90 text-white font-semibold py-3 rounded-2xl mt-6 transition-all duration-300 hover:scale-105 flex items-center justify-center ${isRTL ? 'flex-row-reverse' : ''} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <Search className={`${isRTL ? 'ml-2' : 'mr-2'}`} size={20} />
           {t('showAvailableTickets')}
@@ -167,35 +153,48 @@ const Home = () => {
           <Clock className={`${isRTL ? 'ml-2' : 'mr-2'}`} />
           {t('myTickets')}
         </h3>
-        <div className="space-y-3">
-          {mockTickets.map((ticket) => (
-            <Card key={ticket.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
-                    <div className={`flex items-center space-x-2 mb-1 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                      <span className="font-semibold text-gray-800">{ticket.from}</span>
-                      <span className="text-gray-400">→</span>
-                      <span className="font-semibold text-gray-800">{ticket.to}</span>
+        
+        {bookingsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-doroub-blue" />
+          </div>
+        ) : bookings && bookings.length > 0 ? (
+          <div className="space-y-3">
+            {bookings.slice(0, 3).map((booking) => (
+              <Card key={booking.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
+                      <div className={`flex items-center space-x-2 mb-1 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                        <span className="font-semibold text-gray-800">{booking.routes.origin}</span>
+                        <span className="text-gray-400">→</span>
+                        <span className="font-semibold text-gray-800">{booking.routes.destination}</span>
+                      </div>
+                      <div className={`flex items-center space-x-4 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                        <span>{booking.routes.transit_types.name}</span>
+                        <span>{booking.schedules.departure_time}</span>
+                        <span className="font-semibold text-doroub-blue">{booking.routes.price_da} DA</span>
+                      </div>
                     </div>
-                    <div className={`flex items-center space-x-4 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                      <span>{ticket.type}</span>
-                      <span>{ticket.time}</span>
-                      <span className="font-semibold text-doroub-blue">{ticket.price}</span>
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      booking.status === 'active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : booking.status === 'completed'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {t(booking.status)}
                     </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    ticket.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {ticket.status}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-6 text-center">
+            <p className="text-gray-500">{t('noTicketsYet')}</p>
+          </Card>
+        )}
       </div>
 
       <BottomNavigation />

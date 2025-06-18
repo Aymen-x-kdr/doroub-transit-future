@@ -9,7 +9,196 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          booking_date: string
+          created_at: string
+          id: string
+          payment_status: string
+          route_id: string
+          schedule_id: string
+          seat_number: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_date: string
+          created_at?: string
+          id?: string
+          payment_status?: string
+          route_id: string
+          schedule_id: string
+          seat_number?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_date?: string
+          created_at?: string
+          id?: string
+          payment_status?: string
+          route_id?: string
+          schedule_id?: string
+          seat_number?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          preferred_language: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name: string
+          phone?: string | null
+          preferred_language?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          preferred_language?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      routes: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          destination: string
+          duration_minutes: number
+          id: string
+          name: string
+          origin: string
+          price_da: number
+          transit_type_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          destination: string
+          duration_minutes: number
+          id?: string
+          name: string
+          origin: string
+          price_da: number
+          transit_type_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          destination?: string
+          duration_minutes?: number
+          id?: string
+          name?: string
+          origin?: string
+          price_da?: number
+          transit_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_transit_type_id_fkey"
+            columns: ["transit_type_id"]
+            isOneToOne: false
+            referencedRelation: "transit_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          arrival_time: string
+          available_seats: number
+          created_at: string
+          days_of_week: number[]
+          departure_time: string
+          id: string
+          route_id: string
+        }
+        Insert: {
+          arrival_time: string
+          available_seats?: number
+          created_at?: string
+          days_of_week: number[]
+          departure_time: string
+          id?: string
+          route_id: string
+        }
+        Update: {
+          arrival_time?: string
+          available_seats?: number
+          created_at?: string
+          days_of_week?: number[]
+          departure_time?: string
+          id?: string
+          route_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transit_types: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          description?: string | null
+          icon: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

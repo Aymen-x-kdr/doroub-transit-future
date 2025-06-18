@@ -1,66 +1,99 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  preferred_language?: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUserProfile = async (authUser: User) => {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', authUser.id)
+      .single();
+
+    if (profile) {
+      setUser({
+        id: profile.id,
+        name: profile.name,
+        email: authUser.email || '',
+        phone: profile.phone,
+        preferred_language: profile.preferred_language
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user);
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await fetchUserProfile(session.user);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     
-    // Mock user data
-    const mockUser = {
-      id: '1',
-      name: 'John Doe',
-      email: email
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('doroub_user', JSON.stringify(mockUser));
+    if (error) throw error;
   };
 
   const signup = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+        },
+      },
+    });
     
-    const mockUser = {
-      id: '1',
-      name: name,
-      email: email
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('doroub_user', JSON.stringify(mockUser));
+    if (error) throw error;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
     setUser(null);
-    localStorage.removeItem('doroub_user');
   };
-
-  // Check for existing user on mount
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem('doroub_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
 
   return (
     <AuthContext.Provider value={{
@@ -68,7 +101,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login,
       signup,
       logout,
-      isAuthenticated: !!user
+      isAuthenticated: !!user,
+      loading
     }}>
       {children}
     </AuthContext.Provider>
