@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, MapPin, QrCode } from 'lucide-react';
 
 const Bookings = () => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
 
   const bookings = [
     {
@@ -72,7 +72,7 @@ const Bookings = () => {
       {/* Header */}
       <div className="bg-doroub-gradient px-6 pt-12 pb-6 rounded-b-3xl">
         <h1 className="text-2xl font-bold text-white mb-2">{t('bookings')}</h1>
-        <p className="text-white/80">Manage your travel tickets</p>
+        <p className="text-white/80">{t('manageTravelTickets')}</p>
       </div>
 
       {/* Bookings List */}
@@ -82,17 +82,17 @@ const Bookings = () => {
             <CardContent className="p-4">
               {/* Header */}
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
+                <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
                   <span className="text-2xl">{getTransportIcon(booking.type)}</span>
                   <span className="font-semibold text-gray-800">{booking.type}</span>
                 </div>
                 <Badge className={getStatusColor(booking.status)}>
-                  {booking.status}
+                  {t(booking.status)}
                 </Badge>
               </div>
 
               {/* Route */}
-              <div className="flex items-center space-x-2 mb-3">
+              <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2 mb-3`}>
                 <MapPin size={16} className="text-gray-500" />
                 <span className="font-medium text-gray-800">{booking.from}</span>
                 <span className="text-gray-400">→</span>
@@ -102,22 +102,22 @@ const Bookings = () => {
               {/* Details */}
               <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                 <div>
-                  <p className="text-gray-500">Date & Time</p>
-                  <div className="flex items-center space-x-1">
+                  <p className="text-gray-500">{t('dateTime')}</p>
+                  <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-1`}>
                     <Clock size={14} className="text-gray-400" />
                     <span className="font-medium">{booking.date} • {booking.time}</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-gray-500">Price</p>
+                  <p className="text-gray-500">{t('price')}</p>
                   <p className="font-bold text-doroub-blue">{booking.price}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Seat</p>
+                  <p className="text-gray-500">{t('seat')}</p>
                   <p className="font-medium">{booking.seat}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Ticket ID</p>
+                  <p className="text-gray-500">{t('ticketId')}</p>
                   <p className="font-mono text-xs">{booking.qrCode}</p>
                 </div>
               </div>
@@ -127,8 +127,8 @@ const Bookings = () => {
                 {booking.status === 'active' && (
                   <>
                     <Button className="flex-1 bg-doroub-gradient hover:opacity-90 text-white">
-                      <QrCode size={16} className="mr-2" />
-                      Show QR Code
+                      <QrCode size={16} className={`${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {t('showQrCode')}
                     </Button>
                     <Button variant="outline" className="flex-1 border-doroub-blue text-doroub-blue hover:bg-doroub-blue hover:text-white">
                       {t('trackTicket')}
@@ -137,12 +137,12 @@ const Bookings = () => {
                 )}
                 {booking.status === 'upcoming' && (
                   <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-                    View Details
+                    {t('viewDetails')}
                   </Button>
                 )}
                 {booking.status === 'completed' && (
                   <Button variant="outline" className="w-full">
-                    Download Receipt
+                    {t('downloadReceipt')}
                   </Button>
                 )}
               </div>
@@ -157,10 +157,10 @@ const Bookings = () => {
           <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
             <Clock className="text-gray-400" size={32} />
           </div>
-          <h3 className="font-bold text-gray-800 mb-2">No bookings yet</h3>
-          <p className="text-gray-600 mb-4">Start your journey by booking your first ticket</p>
+          <h3 className="font-bold text-gray-800 mb-2">{t('noBookingsYet')}</h3>
+          <p className="text-gray-600 mb-4">{t('startJourney')}</p>
           <Button className="bg-doroub-gradient hover:opacity-90 text-white">
-            Book Now
+            {t('bookNow')}
           </Button>
         </div>
       )}

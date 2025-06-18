@@ -24,8 +24,8 @@ const Signup = () => {
     
     if (password !== confirmPassword) {
       toast({
-        title: "Error",
-        description: "Passwords do not match",
+        title: t('error'),
+        description: t('passwordsDontMatch'),
         variant: "destructive",
       });
       return;
@@ -36,14 +36,14 @@ const Signup = () => {
     try {
       await signup(name, email, password);
       toast({
-        title: "Success",
-        description: "Welcome to Doroub!",
+        title: t('success'),
+        description: t('welcome'),
       });
       navigate('/home');
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Signup failed. Please try again.",
+        title: t('error'),
+        description: t('signupFailed'),
         variant: "destructive",
       });
     } finally {
@@ -74,7 +74,7 @@ const Signup = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="bg-white/20 border-white/30 text-white placeholder:text-white/60 rounded-xl"
-                placeholder="Your full name"
+                placeholder={t('yourFullName')}
                 required
               />
             </div>
@@ -89,7 +89,7 @@ const Signup = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-white/20 border-white/30 text-white placeholder:text-white/60 rounded-xl"
-                placeholder="your@email.com"
+                placeholder={t('yourEmail')}
                 required
               />
             </div>
@@ -129,13 +129,13 @@ const Signup = () => {
               disabled={isLoading}
               className="w-full bg-white text-doroub-blue hover:bg-white/90 font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105"
             >
-              {isLoading ? 'Creating account...' : t('signup')}
+              {isLoading ? t('creatingAccount') : t('signup')}
             </Button>
           </form>
 
           <div className="text-center mt-6">
             <p className="text-white/80">
-              Already have an account?{' '}
+              {t('alreadyHaveAccount')}{' '}
               <Link to="/login" className="text-white font-semibold hover:underline">
                 {t('login')}
               </Link>

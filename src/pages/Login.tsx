@@ -24,14 +24,14 @@ const Login = () => {
     try {
       await login(email, password);
       toast({
-        title: "Success",
-        description: "Welcome back to Doroub!",
+        title: t('success'),
+        description: t('welcomeBack'),
       });
       navigate('/home');
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Login failed. Please try again.",
+        title: t('error'),
+        description: t('loginFailed'),
         variant: "destructive",
       });
     } finally {
@@ -62,7 +62,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-white/20 border-white/30 text-white placeholder:text-white/60 rounded-xl"
-                placeholder="your@email.com"
+                placeholder={t('yourEmail')}
                 required
               />
             </div>
@@ -87,13 +87,13 @@ const Login = () => {
               disabled={isLoading}
               className="w-full bg-white text-doroub-blue hover:bg-white/90 font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105"
             >
-              {isLoading ? 'Logging in...' : t('login')}
+              {isLoading ? t('loggingIn') : t('login')}
             </Button>
           </form>
 
           <div className="text-center mt-6">
             <p className="text-white/80">
-              Don't have an account?{' '}
+              {t('dontHaveAccount')}{' '}
               <Link to="/signup" className="text-white font-semibold hover:underline">
                 {t('signup')}
               </Link>
